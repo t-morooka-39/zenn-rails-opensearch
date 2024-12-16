@@ -1,0 +1,23 @@
+services:
+  app:
+    build: .
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      - app_bundle:/usr/local/bundle
+    environment:
+      - DATABASE_URL=postgres://user_name:password@db:5432
+    ports:
+      - "3000:3000"
+    command: tail -f /dev/null
+  db:
+    image: postgres:16.4
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=user_name
+      - POSTGRES_PASSWORD=password
+volumes:
+  db_data:
+  app_bundle:
