@@ -21,7 +21,6 @@ services:
   # https://opensearch.org/docs/2.18/install-and-configure/install-opensearch/docker/#sample-docker-composeyml
   opensearch-node1: # This is also the hostname of the container within the Docker network (i.e. https://opensearch-node1/)
     image: opensearchproject/opensearch:latest # Specifying the latest available image - modify if you want a specific version
-    container_name: opensearch-node1
     environment:
       - cluster.name=opensearch-cluster # Name the cluster
       - node.name=opensearch-node1 # Name the node that will run in this container
@@ -46,7 +45,6 @@ services:
       - opensearch-net # All of the containers will join the same Docker bridge network
   opensearch-node2:
     image: opensearchproject/opensearch:latest # This should be the same image used for opensearch-node1 to avoid issues
-    container_name: opensearch-node2
     environment:
       - cluster.name=opensearch-cluster
       - node.name=opensearch-node2
@@ -68,7 +66,6 @@ services:
       - opensearch-net
   opensearch-dashboards:
     image: opensearchproject/opensearch-dashboards:latest # Make sure the version of opensearch-dashboards matches the version of opensearch installed on other nodes
-    container_name: opensearch-dashboards
     ports:
       - 5601:5601 # Map host port 5601 to container port 5601
     expose:
