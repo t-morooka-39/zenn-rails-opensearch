@@ -1,3 +1,19 @@
+x-opensearch-settings: &x-opensearch-settings
+  image: opensearchproject/opensearch:2.17.1 # AWSの対応バージョンを指定
+  ulimits:
+    memlock:
+      soft: -1 # Set memlock to unlimited (no soft or hard limit)
+      hard: -1
+    nofile:
+      soft: 65536 # Maximum number of open files for the opensearch user - set to at least 65536
+      hard: 65536
+x-opensearch-env: &x-opensearch-env
+  cluster.name: opensearch-cluster # Name the cluster
+  discovery.seed_hosts: opensearch-node1,opensearch-node2 # Nodes to look for when discovering the cluster
+  cluster.initial_cluster_manager_nodes: opensearch-node1,opensearch-node2 # Nodes eligible to serve as cluster manager
+  bootstrap.memory_lock: true # Disable JVM heap memory swapping
+  OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m" # Set min and max JVM heap sizes to at least 50% of system RAM
+  OPENSEARCH_INITIAL_ADMIN_PASSWORD: dummyPassword123 # 大文字小文字数字を含む8文字以上のパスワードを指定
 services:
   app:
     build: .
@@ -18,6 +34,35 @@ services:
     environment:
       - POSTGRES_USER=user_name
       - POSTGRES_PASSWORD=password
+  # https://opensearch.org/docs/2.18/install-and-configure/install-opensearch/docker/#sample-docker-composeyml
+  opensearch-node1: # This is also the hostname of the container within the Docker network (i.e. https://opensearch-node1/)
+    <<: *x-opensearch-settings
+    environment:
+      <<: *x-opensearch-env
+      node.name: opensearch-node1 # Name the node that will run in this container
+    volumes:
+      - opensearch-data1:/usr/share/opensearch/data # Creates volume called opensearch-data1 and mounts it to the container
+    ports:
+      - 9200:9200 # REST API
+      - 9600:9600 # Performance Analyzer
+  opensearch-node2:
+    <<: *x-opensearch-settings
+    environment:
+      <<: *x-opensearch-env
+      node.name: opensearch-node2
+    volumes:
+      - opensearch-data2:/usr/share/opensearch/data
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.17.1 # OpenSearchのバージョンに合わせる
+    ports:
+      - 5601:5601 # Map host port 5601 to container port 5601
+    expose:
+      - "5601" # Expose port 5601 for web access to OpenSearch Dashboards
+    environment:
+      OPENSEARCH_HOSTS: '["https://opensearch-node1:9200","https://opensearch-node2:9200"]' # Define the OpenSearch nodes that OpenSearch Dashboards will query
+      DISABLE_SECURITY_DASHBOARDS_PLUGIN: true # 認証を省略
 volumes:
   db_data:
   app_bundle:
+  opensearch-data1:
+  opensearch-data2:
