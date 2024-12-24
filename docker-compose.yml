@@ -14,6 +14,7 @@ x-opensearch-env: &x-opensearch-env
   bootstrap.memory_lock: true # Disable JVM heap memory swapping
   OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m" # Set min and max JVM heap sizes to at least 50% of system RAM
   OPENSEARCH_INITIAL_ADMIN_PASSWORD: dummyPassword123! # 大文字小文字数字特殊文字を含む8文字以上のパスワードを指定
+  plugins.security.disabled: true # 認証を省略
 services:
   app:
     build: .
@@ -63,7 +64,7 @@ services:
     expose:
       - "5601" # Expose port 5601 for web access to OpenSearch Dashboards
     environment:
-      OPENSEARCH_HOSTS: '["https://opensearch-node1:9200","https://opensearch-node2:9200"]' # Define the OpenSearch nodes that OpenSearch Dashboards will query
+      OPENSEARCH_HOSTS: '["http://opensearch-node1:9200","http://opensearch-node2:9200"]' # Define the OpenSearch nodes that OpenSearch Dashboards will query
       DISABLE_SECURITY_DASHBOARDS_PLUGIN: true # 認証を省略
     networks:
       - opensearch-net
